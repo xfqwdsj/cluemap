@@ -13,6 +13,8 @@ interface AppStore {
   selectedCategory: string | null;
   datasetVersion: number;
   sidebarOpen: boolean;
+  collapsedActionIds: string[];
+  localeUploadOpen: boolean;
 
   addDataset: (dataset: DataSet) => void;
   addStringSetToCurrentDataset: (stringSet: DataSet['stringSets'][0]) => void;
@@ -25,6 +27,8 @@ interface AppStore {
   setSelectedCategory: (category: string | null) => void;
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
+  setCollapsedActionIds: (ids: string[]) => void;
+  setLocaleUploadOpen: (open: boolean) => void;
   getCurrentDataset: () => DataSet | null;
   getCurrentStringSet: () => Record<string, string> | null;
   getLocaleMessages: () => LocaleMessages;
@@ -41,6 +45,8 @@ export const useStore = create<AppStore>((set, get) => ({
   selectedCategory: null,
   datasetVersion: 0,
   sidebarOpen: false,
+  collapsedActionIds: [],
+  localeUploadOpen: false,
 
   addDataset: (dataset) => set((state) => {
     const existingIndex = state.datasets.findIndex(d => d.id === dataset.id);
@@ -91,6 +97,8 @@ export const useStore = create<AppStore>((set, get) => ({
 
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  setCollapsedActionIds: (ids) => set({ collapsedActionIds: ids }),
+  setLocaleUploadOpen: (open) => set({ localeUploadOpen: open }),
 
   getCurrentDataset: () => {
     const state = get();

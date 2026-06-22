@@ -4,6 +4,8 @@ import { useMemo, useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { SearchBar } from './SearchBar';
 import { MathText } from './MathText';
+import { StringSetSwitcher } from './StringSetSwitcher';
+import { getAvailableLocales } from '@/lib/i18n';
 
 export function Sidebar() {
   const currentDataset = useStore((s) => s.getCurrentDataset());
@@ -15,6 +17,10 @@ export function Sidebar() {
   const setSelectedCategory = useStore((s) => s.setSelectedCategory);
   const sidebarOpen = useStore((s) => s.sidebarOpen);
   const setSidebarOpen = useStore((s) => s.setSidebarOpen);
+  const locale = useStore((s) => s.locale);
+  const setLocale = useStore((s) => s.setLocale);
+  const collapsedActionIds = useStore((s) => s.collapsedActionIds);
+  const setShowLocaleUpload = useStore((s) => s.setLocaleUploadOpen);
   const t = useStore((s) => s.getLocaleMessages());
 
   const itemRefs = useRef<Map<string, HTMLLIElement>>(new Map());
@@ -128,6 +134,39 @@ export function Sidebar() {
           </ul>
         )}
       </div>
+
+      {collapsedActionIds.length > 0 && (
+        <div className="border-t border-gray-200 px-4 py-3 space-y-3">
+          {collapsedActionIds.includes('stringset') && (
+            <StringSetSwitcher fullWidth />
+          )}
+          {collapsedActionIds.includes('locale') && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-500 whitespace-nowrap">{t.language}:</label>
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                className="flex-1 min-w-0 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {getAvailableLocales().map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc === 'zh' ? t.chinese : loc}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setShowLocaleUpload(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                title={t.uploadLanguagePack}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

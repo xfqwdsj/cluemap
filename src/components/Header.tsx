@@ -8,13 +8,15 @@ import { DropZone } from './ui/DropZone';
 import { RecentFilesModal } from './RecentFilesModal';
 import { getRecentFiles, addRecentFile, openFileFromHandle } from '@/lib/file-history';
 import type { FileHistoryEntry } from '@/lib/file-history';
+import { ActionGroup, ActionItem } from './Actions';
 
 export function Header() {
   const currentDataset = useStore((s) => s.getCurrentDataset());
   const locale = useStore((s) => s.locale);
   const setLocale = useStore((s) => s.setLocale);
   const t = useStore((s) => s.getLocaleMessages());
-  const [showLocaleUpload, setShowLocaleUpload] = useState(false);
+  const showLocaleUpload = useStore((s) => s.localeUploadOpen);
+  const setShowLocaleUpload = useStore((s) => s.setLocaleUploadOpen);
   const [showRecent, setShowRecent] = useState(false);
   const [recentEntries, setRecentEntries] = useState<FileHistoryEntry[]>([]);
 
@@ -89,39 +91,42 @@ export function Header() {
           </button>
           <h1 className="text-xl lg:text-2xl font-bold text-gray-900">{t.appName}</h1>
           {currentDataset && (
-            <span className="text-sm text-gray-500 hidden sm:inline">
+            <span className="text-sm text-gray-500 hidden sm:inline truncate max-w-40">
               {currentDataset.name}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-6">
-          <StringSetSwitcher />
-
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500">{t.language}:</label>
-            <select
-              value={locale}
-              onChange={(e) => setLocale(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              {getAvailableLocales().map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc === 'zh' ? t.chinese : loc}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => setShowLocaleUpload(!showLocaleUpload)}
-              className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-              title={t.uploadLanguagePack}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
-          </div>
-        </div>
+        <ActionGroup>
+          <ActionItem id="stringset" priority={2}>
+            <StringSetSwitcher />
+          </ActionItem>
+          <ActionItem id="locale" priority={1}>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-500">{t.language}:</label>
+              <select
+                value={locale}
+                onChange={(e) => setLocale(e.target.value)}
+                className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                {getAvailableLocales().map((loc) => (
+                  <option key={loc} value={loc}>
+                    {loc === 'zh' ? t.chinese : loc}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => setShowLocaleUpload(!showLocaleUpload)}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title={t.uploadLanguagePack}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+            </div>
+          </ActionItem>
+        </ActionGroup>
       </div>
 
       {showLocaleUpload && (

@@ -41,7 +41,7 @@ export default function Home() {
         )}
 
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between">
+          <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between gap-2 flex-wrap">
             <Tabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as 'graph' | 'tree' | 'detail')} />
             <UploadPanel />
           </div>

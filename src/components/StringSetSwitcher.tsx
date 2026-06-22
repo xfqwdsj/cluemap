@@ -2,7 +2,7 @@
 
 import { useStore } from '@/lib/store';
 
-export function StringSetSwitcher() {
+export function StringSetSwitcher({ fullWidth }: { fullWidth?: boolean }) {
   const currentDataset = useStore((s) => s.getCurrentDataset());
   const currentStringSetIndex = useStore((s) => s.currentStringSetIndex);
   const setCurrentStringSetIndex = useStore((s) => s.setCurrentStringSetIndex);
@@ -13,12 +13,12 @@ export function StringSetSwitcher() {
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <label className="text-sm text-gray-500">{t.stringSet}:</label>
+    <div className={`flex items-center gap-2 ${fullWidth ? '' : ''}`}>
+      <label className="text-sm text-gray-500 whitespace-nowrap">{t.stringSet}:</label>
       <select
         value={currentStringSetIndex}
         onChange={(e) => setCurrentStringSetIndex(Number(e.target.value))}
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className={`px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${fullWidth ? 'flex-1 min-w-0' : ''}`}
       >
         {currentDataset.stringSets.map((ss, index) => (
           <option key={index} value={index}>
