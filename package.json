@@ -1,0 +1,39 @@
+{
+  "name": "cluemap",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "validate": "pnpm exec tsx scripts/validate.ts",
+    "debug-tree": "pnpm exec tsx scripts/debug-tree.ts"
+  },
+  "dependencies": {
+    "@types/d3": "^7.4.3",
+    "@types/katex": "^0.16.8",
+    "d3": "^7.9.0",
+    "framer-motion": "^12.40.0",
+    "katex": "^0.17.0",
+    "next": "16.2.9",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^26.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitest/coverage-v8": "^4.1.9",
+    "eslint": "^10.5.0",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4.3.1",
+    "tsx": "^4.19.0",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
+  }
+}
