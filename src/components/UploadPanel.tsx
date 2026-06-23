@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useStore } from '@/lib/store';
 import { parseDataSet, parseStringSet } from '@/lib/parser';
-import { getRecentFiles, addRecentFile, openFileFromHandle } from '@/lib/file-history';
+import { getRecentFiles, addRecentFile, openFileFromHandle, fetchFileFromUrl } from '@/lib/file-history';
 import type { FileHistoryType, FileHistoryEntry } from '@/lib/file-history';
 import { Button } from './ui/Button';
 import { Modal } from './ui/Modal';
@@ -79,13 +79,15 @@ export function UploadPanel() {
     }
   }, [mode, handleDatasetUpload, handleStringSetUpload]);
 
-  const handleDrop = useCallback(async (file: File, handle?: FileSystemFileHandle) => {
+  const handleDrop = useCallback(async (file: File, handle?: FileSystemFileHandle, sourceUrl?: string) => {
     if (!file.name.endsWith('.json')) {
       setError(t.jsonFilesOnly);
       return;
     }
     if (handle) {
       await addRecentFile(historyType, file.name, handle);
+    } else if (sourceUrl) {
+      await addRecentFile(historyType, file.name, undefined, sourceUrl);
     }
     await handleFileUpload(file);
   }, [handleFileUpload, historyType]);
@@ -93,8 +95,16 @@ export function UploadPanel() {
   const handleRecentSelect = useCallback(async (entry: FileHistoryEntry) => {
     try {
       setShowRecent(false);
-      const file = await openFileFromHandle(entry.handle);
-      await addRecentFile(historyType, entry.name, entry.handle);
+      let file: File;
+      if (entry.url) {
+        file = await fetchFileFromUrl(entry.url);
+        await addRecentFile(historyType, entry.name, undefined, entry.url);
+      } else if (entry.handle) {
+        file = await openFileFromHandle(entry.handle);
+        await addRecentFile(historyType, entry.name, entry.handle);
+      } else {
+        return;
+      }
       await handleFileUpload(file);
     } catch (e) {
       setError(e instanceof Error ? e.message : t.fileAccessError);
@@ -130,6 +140,14 @@ export function UploadPanel() {
           formatHint={t.jsonOnly}
           onOpenRecent={() => setShowRecent(true)}
           recentCount={recentEntries.length}
+          urlLabel={t.urlInputLabel}
+          urlPlaceholder={t.urlInputPlaceholder}
+          urlLoadText={t.urlLoad}
+          urlLoadingText={t.urlLoading}
+          urlErrorInvalid={t.urlErrorInvalid}
+          urlErrorNetwork={t.urlErrorNetwork}
+          urlErrorFetch={t.urlErrorFetch}
+          orText={t.orText}
         />
 
         {error && (

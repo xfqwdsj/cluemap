@@ -6,7 +6,7 @@ import { StringSetSwitcher } from './StringSetSwitcher';
 import { getAvailableLocales, setLocale as setI18nLocale, LocaleMessages } from '@/lib/i18n';
 import { DropZone } from './ui/DropZone';
 import { RecentFilesModal } from './RecentFilesModal';
-import { getRecentFiles, addRecentFile, openFileFromHandle } from '@/lib/file-history';
+import { getRecentFiles, addRecentFile, openFileFromHandle, fetchFileFromUrl } from '@/lib/file-history';
 import type { FileHistoryEntry } from '@/lib/file-history';
 import { ActionGroup, ActionItem } from './Actions';
 import { ThemeToggle } from './ThemeToggle';
@@ -32,7 +32,7 @@ export function Header() {
     }
   }, [showLocaleUpload, refreshRecent]);
 
-  const handleLocaleUpload = useCallback(async (file: File, handle?: FileSystemFileHandle) => {
+  const handleLocaleUpload = useCallback(async (file: File, handle?: FileSystemFileHandle, sourceUrl?: string) => {
     try {
       const text = await file.text();
       const messages: LocaleMessages = JSON.parse(text);
@@ -47,6 +47,8 @@ export function Header() {
 
       if (handle) {
         await addRecentFile('locales', file.name, handle);
+      } else if (sourceUrl) {
+        await addRecentFile('locales', file.name, undefined, sourceUrl);
       }
 
       const localeName = messages.appName || file.name.replace('.json', '');
@@ -61,8 +63,16 @@ export function Header() {
   const handleRecentSelect = useCallback(async (entry: FileHistoryEntry) => {
     try {
       setShowRecent(false);
-      const file = await openFileFromHandle(entry.handle);
-      await addRecentFile('locales', entry.name, entry.handle);
+      let file: File;
+      if (entry.url) {
+        file = await fetchFileFromUrl(entry.url);
+        await addRecentFile('locales', entry.name, undefined, entry.url);
+      } else if (entry.handle) {
+        file = await openFileFromHandle(entry.handle);
+        await addRecentFile('locales', entry.name, entry.handle);
+      } else {
+        return;
+      }
       await handleLocaleUpload(file);
     } catch {
       alert('无法访问文件');
@@ -150,6 +160,14 @@ export function Header() {
             compact
             onOpenRecent={() => setShowRecent(true)}
             recentCount={recentEntries.length}
+            urlLabel={t.urlInputLabel}
+            urlPlaceholder={t.urlInputPlaceholder}
+            urlLoadText={t.urlLoad}
+            urlLoadingText={t.urlLoading}
+            urlErrorInvalid={t.urlErrorInvalid}
+            urlErrorNetwork={t.urlErrorNetwork}
+            urlErrorFetch={t.urlErrorFetch}
+            orText={t.orText}
           />
         </div>
       )}

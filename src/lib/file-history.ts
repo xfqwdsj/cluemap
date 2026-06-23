@@ -6,7 +6,8 @@ export interface FileHistoryEntry {
   id: string;
   name: string;
   lastOpened: number;
-  handle: FileSystemFileHandle;
+  handle?: FileSystemFileHandle;
+  url?: string;
 }
 
 const DB_NAME = 'cluemap-file-history';
@@ -68,6 +69,7 @@ interface StoredEntry {
   id: string;
   name: string;
   lastOpened: number;
+  url?: string;
 }
 
 function getStorageKey(type: FileHistoryType): string {
@@ -84,9 +86,13 @@ export async function getRecentFiles(type: FileHistoryType): Promise<FileHistory
     
     const entries: FileHistoryEntry[] = [];
     for (const s of sorted) {
-      const handle = await getHandle(s.id);
-      if (handle) {
-        entries.push({ ...s, handle });
+      if (s.url) {
+        entries.push({ ...s, handle: undefined });
+      } else {
+        const handle = await getHandle(s.id);
+        if (handle) {
+          entries.push({ ...s, handle });
+        }
       }
     }
     return entries;
@@ -95,7 +101,7 @@ export async function getRecentFiles(type: FileHistoryType): Promise<FileHistory
   }
 }
 
-export async function addRecentFile(type: FileHistoryType, name: string, handle: FileSystemFileHandle): Promise<void> {
+export async function addRecentFile(type: FileHistoryType, name: string, handle?: FileSystemFileHandle, url?: string): Promise<void> {
   const data = localStorage.getItem(getStorageKey(type));
   const stored: StoredEntry[] = data ? JSON.parse(data) : [];
   
@@ -104,10 +110,11 @@ export async function addRecentFile(type: FileHistoryType, name: string, handle:
   const existingIndex = stored.findIndex(e => e.name === name);
   if (existingIndex >= 0) {
     stored[existingIndex].lastOpened = Date.now();
-    await setHandle(stored[existingIndex].id, handle);
+    if (url) stored[existingIndex].url = url;
+    if (handle) await setHandle(stored[existingIndex].id, handle);
   } else {
-    stored.unshift({ id, name, lastOpened: Date.now() });
-    await setHandle(id, handle);
+    stored.unshift({ id, name, lastOpened: Date.now(), url });
+    if (handle) await setHandle(id, handle);
   }
   
   const trimmed = stored
@@ -136,4 +143,14 @@ export async function openFileFromHandle(handle: FileSystemFileHandle): Promise<
 export async function getLastOpenedFile(type: FileHistoryType): Promise<FileHistoryEntry | null> {
   const entries = await getRecentFiles(type);
   return entries.length > 0 ? entries[0] : null;
+}
+
+export async function fetchFileFromUrl(url: string): Promise<File> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}`);
+  }
+  const blob = await response.blob();
+  const fileName = url.split('/').pop()?.split('?')[0] || 'remote-file.json';
+  return new File([blob], fileName, { type: blob.type || 'application/json' });
 }

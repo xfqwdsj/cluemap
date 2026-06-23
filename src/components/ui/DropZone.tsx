@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { Button } from './Button';
 
 interface DropZoneProps {
-  onFile: (file: File, handle?: FileSystemFileHandle) => void;
+  onFile: (file: File, handle?: FileSystemFileHandle, sourceUrl?: string) => void;
   accept?: string;
   hint?: string;
   releaseText?: string;
@@ -12,6 +13,14 @@ interface DropZoneProps {
   compact?: boolean;
   onOpenRecent?: () => void;
   recentCount?: number;
+  urlLabel?: string;
+  urlPlaceholder?: string;
+  urlLoadText?: string;
+  urlLoadingText?: string;
+  urlErrorInvalid?: string;
+  urlErrorNetwork?: string;
+  urlErrorFetch?: string;
+  orText?: string;
 }
 
 export function DropZone({
@@ -24,8 +33,19 @@ export function DropZone({
   compact = false,
   onOpenRecent,
   recentCount = 0,
+  urlLabel,
+  urlPlaceholder,
+  urlLoadText,
+  urlLoadingText,
+  urlErrorInvalid,
+  urlErrorNetwork,
+  urlErrorFetch,
+  orText,
 }: DropZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [urlValue, setUrlValue] = useState('');
+  const [urlLoading, setUrlLoading] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
 
   const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
@@ -73,6 +93,41 @@ export function DropZone({
       setIsDragOver(false);
     }
   }, []);
+
+  const handleUrlLoad = useCallback(async () => {
+    const trimmed = urlValue.trim();
+    if (!trimmed) {
+      setUrlError(urlErrorInvalid || '请输入有效的 URL');
+      return;
+    }
+    let url: URL;
+    try {
+      url = new URL(trimmed);
+    } catch {
+      setUrlError(urlErrorInvalid || '请输入有效的 URL');
+      return;
+    }
+    setUrlLoading(true);
+    setUrlError(null);
+    try {
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+      const blob = await response.blob();
+      const fileName = url.pathname.split('/').pop() || 'remote-file.json';
+      const file = new File([blob], fileName, { type: blob.type || 'application/json' });
+      onFile(file, undefined, url.toString());
+    } catch (e) {
+      if (e instanceof TypeError) {
+        setUrlError(urlErrorNetwork || '网络错误，请检查连接');
+      } else {
+        setUrlError(urlErrorFetch || '加载失败');
+      }
+    } finally {
+      setUrlLoading(false);
+    }
+  }, [urlValue, onFile, urlErrorInvalid, urlErrorNetwork, urlErrorFetch]);
 
   return (
     <div
@@ -131,6 +186,48 @@ export function DropZone({
           </p>
         )}
       </div>
+
+      <div className="mt-3 flex items-center gap-2">
+        <span className="text-xs whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{orText || '或'}</span>
+        <div className="flex-1 flex items-center gap-1.5">
+          <input
+            type="url"
+            value={urlValue}
+            onChange={(e) => { setUrlValue(e.target.value); setUrlError(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleUrlLoad(); }}
+            placeholder={urlPlaceholder || 'https://example.com/data.json'}
+            disabled={urlLoading}
+            className="flex-1 px-2.5 h-10 text-sm rounded-md border focus:outline-none focus:ring-2 disabled:opacity-50"
+            style={{
+              border: '1px solid var(--border-secondary)',
+              backgroundColor: 'var(--bg-secondary)',
+              color: 'var(--text-primary)',
+              '--tw-ring-color': 'var(--accent-ring)',
+            } as React.CSSProperties}
+          />
+          <Button
+            size="sm"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleUrlLoad(); }}
+            disabled={urlLoading || !urlValue.trim()}
+            className="disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {urlLoading ? (urlLoadingText || '加载中...') : (urlLoadText || '加载')}
+          </Button>
+        </div>
+      </div>
+
+      {urlLoading && (
+        <div className="mt-2 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-secondary)' }}>
+          <div
+            className="h-full rounded-full animate-pulse"
+            style={{ backgroundColor: 'var(--accent)', width: '60%' }}
+          />
+        </div>
+      )}
+
+      {urlError && (
+        <p className="mt-2 text-xs" style={{ color: 'var(--error-text, #ef4444)' }}>{urlError}</p>
+      )}
 
       {onOpenRecent && recentCount > 0 && (
         <button

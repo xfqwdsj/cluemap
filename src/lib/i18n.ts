@@ -86,6 +86,15 @@ export interface LocaleMessages {
   today: string;
   yesterday: string;
   daysAgo: string;
+  // URL input
+  urlInputLabel: string;
+  urlInputPlaceholder: string;
+  urlLoad: string;
+  urlLoading: string;
+  urlErrorInvalid: string;
+  urlErrorNetwork: string;
+  urlErrorFetch: string;
+  orText: string;
 }
 
 const zh: LocaleMessages = {
@@ -159,6 +168,14 @@ const zh: LocaleMessages = {
   today: '今天',
   yesterday: '昨天',
   daysAgo: '天前',
+  urlInputLabel: '或输入 URL',
+  urlInputPlaceholder: 'https://example.com/data.json',
+  urlLoad: '加载',
+  urlLoading: '加载中...',
+  urlErrorInvalid: '请输入有效的 URL',
+  urlErrorNetwork: '网络错误，请检查连接',
+  urlErrorFetch: '加载失败',
+  orText: '或',
 };
 
 const locales: Record<string, LocaleMessages> = {
