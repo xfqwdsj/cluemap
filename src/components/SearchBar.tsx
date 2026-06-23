@@ -9,7 +9,7 @@ export function SearchBar() {
   const t = useStore((s) => s.getLocaleMessages());
 
   return (
-    <div className="p-4 border-b border-gray-200">
+    <div className="p-4" style={{ borderBottom: '1px solid var(--border-primary)' }}>
       <Input
         type="text"
         placeholder={t.searchPlaceholder}

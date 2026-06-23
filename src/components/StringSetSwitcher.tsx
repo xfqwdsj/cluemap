@@ -14,11 +14,17 @@ export function StringSetSwitcher({ fullWidth }: { fullWidth?: boolean }) {
 
   return (
     <div className={`flex items-center gap-2 ${fullWidth ? '' : ''}`}>
-      <label className="text-sm text-gray-500 whitespace-nowrap">{t.stringSet}:</label>
+      <label className="text-sm whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>{t.stringSet}:</label>
       <select
         value={currentStringSetIndex}
         onChange={(e) => setCurrentStringSetIndex(Number(e.target.value))}
-        className={`px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${fullWidth ? 'flex-1 min-w-0' : ''}`}
+        className={`px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 ${fullWidth ? 'flex-1 min-w-0' : ''}`}
+        style={{
+          border: '1px solid var(--border-secondary)',
+          backgroundColor: 'var(--bg-secondary)',
+          color: 'var(--text-primary)',
+          '--tw-ring-color': 'var(--accent-ring)',
+        } as React.CSSProperties}
       >
         {currentDataset.stringSets.map((ss, index) => (
           <option key={index} value={index}>

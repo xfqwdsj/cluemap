@@ -75,9 +75,9 @@ export const useStore = create<AppStore>((set, get) => ({
     };
   }),
 
-  setCurrentDataset: (id) => set({ 
-    currentDatasetId: id, 
-    currentStringSetIndex: 0, 
+  setCurrentDataset: (id) => set({
+    currentDatasetId: id,
+    currentStringSetIndex: 0,
     selectedCategory: null,
     selectedStatementId: null,
     searchQuery: '',

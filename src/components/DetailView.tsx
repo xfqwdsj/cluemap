@@ -37,7 +37,6 @@ export function DetailView() {
       (c) => c.to === selectedStatementId
     );
 
-    // Group outgoing by type
     const outgoingGrouped: GroupedConnections[] = [];
     const outgoingByType = outgoing.reduce((acc, conn) => {
       if (!acc[conn.type]) acc[conn.type] = [];
@@ -49,7 +48,6 @@ export function DetailView() {
       outgoingGrouped.push({ type: type as Connection['type'], connections, direction: 'outgoing' });
     }
 
-    // Group incoming by type
     const incomingGrouped: GroupedConnections[] = [];
     const incomingByType = incoming.reduce((acc, conn) => {
       if (!acc[conn.type]) acc[conn.type] = [];
@@ -61,15 +59,12 @@ export function DetailView() {
       incomingGrouped.push({ type: type as Connection['type'], connections, direction: 'incoming' });
     }
 
-    // Find compound relationships involving this statement
     const virtualNodes = currentDataset.virtualNodes || [];
 
-    // Compound outgoing: this statement is a premise in a virtual node
     const compoundOutgoing = virtualNodes.filter(vn =>
       vn.premises.includes(selectedStatementId)
     );
 
-    // Compound incoming: this statement is the target of a virtual node
     const compoundIncoming = virtualNodes.filter(vn =>
       vn.target === selectedStatementId
     );
@@ -79,7 +74,7 @@ export function DetailView() {
 
   if (!currentDataset || !selectedStatementId) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>
         {t.selectStatement}
       </div>
     );
@@ -97,36 +92,33 @@ export function DetailView() {
 
   return (
     <div className="p-6 overflow-auto h-full">
-      {/* Header */}
-      <div className="mb-6 pb-4 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">
+      <div className="mb-6 pb-4" style={{ borderBottom: '1px solid var(--border-primary)' }}>
+        <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>
           <MathText text={text} />
         </h2>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-500">ID: {selectedStatementId}</span>
+          <span className="text-sm" style={{ color: 'var(--text-muted)' }}>ID: {selectedStatementId}</span>
           {category && (
-            <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full">
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--accent-muted)', color: 'var(--accent-text)' }}>
               {category.name}
             </span>
           )}
         </div>
       </div>
 
-      {/* Relationships */}
       {hasConnections ? (
         <div className="space-y-6">
-          {/* Outgoing: this statement implies/equivalent to others */}
           {groupedConnections.outgoing.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>
                 {t.derivesThis}
               </h3>
               <div className="space-y-4">
                 {groupedConnections.outgoing.map((group) => (
-                  <div key={`out-${group.type}`} className="bg-gray-50 rounded-lg p-4">
+                  <div key={`out-${group.type}`} className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
                     <div className="flex items-center gap-2 mb-3">
                       <RelationshipBadge type={group.type} direction="forward" />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {RELATIONSHIP_LABELS[group.type]}
                       </span>
                     </div>
@@ -135,15 +127,16 @@ export function DetailView() {
                         <li
                           key={i}
                           onClick={() => selectStatement(conn.to)}
-                          className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-3 py-2 rounded-lg transition-colors"
+                          className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg transition-colors"
+                          style={{ color: 'var(--text-primary)' }}
                         >
-                          <span className="text-gray-400">
+                          <span style={{ color: 'var(--text-placeholder)' }}>
                             {conn.type === 'implies' && '→'}
                             {conn.type === 'inverse' && '↔'}
                             {conn.type === 'equivalent' && '⇔'}
                             {conn.type === 'subset' && '⊂'}
                           </span>
-                          <span className="text-blue-600 hover:underline">
+                          <span className="hover:underline" style={{ color: 'var(--accent-text)' }}>
                             <MathText text={stringSet?.[conn.to] || conn.to} />
                           </span>
                         </li>
@@ -155,18 +148,17 @@ export function DetailView() {
             </div>
           )}
 
-          {/* Incoming: others imply/equivalent to this statement */}
           {groupedConnections.incoming.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>
                 {t.derivedFromThisDirection}
               </h3>
               <div className="space-y-4">
                 {groupedConnections.incoming.map((group) => (
-                  <div key={`in-${group.type}`} className="bg-gray-50 rounded-lg p-4">
+                  <div key={`in-${group.type}`} className="rounded-lg p-4" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
                     <div className="flex items-center gap-2 mb-3">
                       <RelationshipBadge type={group.type} direction="backward" />
-                      <span className="text-sm text-gray-600">
+                      <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                         {RELATIONSHIP_LABELS[group.type]}
                       </span>
                     </div>
@@ -175,15 +167,16 @@ export function DetailView() {
                         <li
                           key={i}
                           onClick={() => selectStatement(conn.from)}
-                          className="flex items-center gap-2 text-sm cursor-pointer hover:bg-white px-3 py-2 rounded-lg transition-colors"
+                          className="flex items-center gap-2 text-sm cursor-pointer px-3 py-2 rounded-lg transition-colors"
+                          style={{ color: 'var(--text-primary)' }}
                         >
-                          <span className="text-gray-400">
+                          <span style={{ color: 'var(--text-placeholder)' }}>
                             {conn.type === 'implies' && '←'}
                             {conn.type === 'inverse' && '↔'}
                             {conn.type === 'equivalent' && '⇔'}
                             {conn.type === 'subset' && '⊃'}
                           </span>
-                          <span className="text-blue-600 hover:underline">
+                          <span className="hover:underline" style={{ color: 'var(--accent-text)' }}>
                             <MathText text={stringSet?.[conn.from] || conn.from} />
                           </span>
                         </li>
@@ -195,10 +188,9 @@ export function DetailView() {
             </div>
           )}
 
-          {/* Compound Outgoing: this statement is part of a compound condition */}
           {groupedConnections.compoundOutgoing.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>
                 {t.participatesAsPremise}
               </h3>
               <div className="space-y-4">
@@ -209,10 +201,9 @@ export function DetailView() {
             </div>
           )}
 
-          {/* Compound Incoming: this statement is the target of a compound condition */}
           {groupedConnections.compoundIncoming.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-semibold uppercase tracking-wide mb-3" style={{ color: 'var(--text-muted)' }}>
                 {t.derivedFromCompound}
               </h3>
               <div className="space-y-4">
@@ -224,7 +215,7 @@ export function DetailView() {
           )}
         </div>
       ) : (
-        <p className="text-gray-500 text-sm">
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {t.noConnections}
         </p>
       )}

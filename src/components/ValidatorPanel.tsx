@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useStore } from '@/lib/store';
 import { validateDataset } from '@/lib/validator';
+import { IconButton } from './ui/IconButton';
 
 export function ValidatorPanel() {
   const currentDataset = useStore((s) => s.getCurrentDataset());
@@ -45,7 +46,6 @@ export function ValidatorPanel() {
       lines.push(t.noIssuesFound);
     }
 
-    // Add dataset summary
     lines.push(`## ${t.datasetSummary}`);
     lines.push(`- ${t.nodeCount}: ${currentDataset?.statements.length || 0}`);
     lines.push(`- ${t.connectionCount}: ${currentDataset?.connections.length || 0}`);
@@ -58,37 +58,38 @@ export function ValidatorPanel() {
   if (!currentDataset) return null;
 
   return (
-    <div className="bg-white border-t border-gray-200">
-      {/* Header bar - always visible */}
+    <div style={{ backgroundColor: 'var(--bg-secondary)', borderTop: '1px solid var(--border-primary)' }}>
       <div
-        className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors"
+        className="flex items-center justify-between px-4 py-2 cursor-pointer transition-colors"
+        style={{ backgroundColor: 'var(--bg-secondary)' }}
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-gray-700">{t.dataValidation}</h3>
-          <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+          <h3 className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>{t.dataValidation}</h3>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--success-bg)', color: 'var(--success-text)' }}>
             {errors.length} {t.errorCount}
           </span>
-          <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: 'var(--warning-bg)', color: 'var(--warning-text)' }}>
             {warnings.length} {t.warningCount}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
+          <IconButton
+            size="sm"
             onClick={(e) => {
               e.stopPropagation();
               copyToClipboard();
             }}
-            className="p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors"
             title={t.copyReport}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
-          </button>
+          </IconButton>
           <svg
-            className={`w-4 h-4 text-gray-500 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            style={{ color: 'var(--text-muted)' }}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -98,24 +99,24 @@ export function ValidatorPanel() {
         </div>
       </div>
 
-      {/* Expandable content */}
       {isExpanded && (
         <div className="px-4 pb-4 max-h-60 overflow-y-auto">
           {issues.length === 0 ? (
-            <p className="text-sm text-green-600">✓ {t.validationPassed}，{t.noIssuesFound}</p>
+            <p className="text-sm" style={{ color: 'var(--success-text)' }}>✓ {t.validationPassed}，{t.noIssuesFound}</p>
           ) : (
             <div className="space-y-1">
               {errors.map((issue, i) => (
                 <div
                   key={`e-${i}`}
-                  className="flex items-start gap-2 text-sm text-red-600"
+                  className="flex items-start gap-2 text-sm"
+                  style={{ color: 'var(--error-text)' }}
                 >
                   <span>✗</span>
                   <span>{issue.message}</span>
                   {issue.nodeId ? (
                     <button
                       onClick={() => selectStatement(issue.nodeId!)}
-                      className="text-xs underline hover:text-red-800"
+                      className="text-xs underline"
                     >
                       {t.locate}
                     </button>
@@ -125,14 +126,15 @@ export function ValidatorPanel() {
               {warnings.map((issue, i) => (
                 <div
                   key={`w-${i}`}
-                  className="flex items-start gap-2 text-sm text-yellow-600"
+                  className="flex items-start gap-2 text-sm"
+                  style={{ color: 'var(--warning-text)' }}
                 >
                   <span>⚠</span>
                   <span>{issue.message}</span>
                   {issue.nodeId ? (
                     <button
                       onClick={() => selectStatement(issue.nodeId!)}
-                      className="text-xs underline hover:text-yellow-800"
+                      className="text-xs underline"
                     >
                       {t.locate}
                     </button>

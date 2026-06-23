@@ -23,6 +23,10 @@ function renderKatex(text: string): string {
   });
 }
 
+function getCSSVariable(name: string): string {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
 interface GraphViewProps {
   isVisible: boolean;
 }
@@ -43,7 +47,6 @@ export function GraphView({ isVisible }: GraphViewProps) {
   const stringSet = useStore((s) => s.getCurrentStringSet());
   const datasetVersion = useStore((s) => s.datasetVersion);
 
-  // Keep ref in sync
   selectStatementRef.current = selectStatement;
 
   useEffect(() => {
@@ -66,18 +69,21 @@ export function GraphView({ isVisible }: GraphViewProps) {
     return () => observer.disconnect();
   }, []);
 
-  // Detect dataset change and reset built state
   useEffect(() => {
     builtRef.current = false;
   }, [datasetVersion]);
 
-  // Build graph when dataset is available
   useEffect(() => {
     if (!currentDataset || !svgRef.current || builtRef.current) return;
     if (dimensions.width <= 0 || dimensions.height <= 0) return;
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove();
+
+    const nodeColor = getCSSVariable('--graph-node');
+    const nodeStroke = getCSSVariable('--graph-node-stroke');
+    const arrowColor = getCSSVariable('--graph-arrow');
+    const labelColor = getCSSVariable('--graph-label');
 
     const { nodes, links } = prepareGraphData(currentDataset, stringSet);
     const simulation = createSimulation(nodes, links, dimensions.width, dimensions.height);
@@ -93,7 +99,7 @@ export function GraphView({ isVisible }: GraphViewProps) {
       .attr('orient', 'auto')
       .append('path')
       .attr('d', 'M0,0 L10,3 L0,6 Z')
-      .attr('fill', '#3B82F6');
+      .attr('fill', arrowColor);
 
     const g = svg.append('g');
 
@@ -104,7 +110,6 @@ export function GraphView({ isVisible }: GraphViewProps) {
       });
     svg.call(zoom);
 
-    // Links
     const link = g.append('g')
       .selectAll('line')
       .data(links)
@@ -118,7 +123,6 @@ export function GraphView({ isVisible }: GraphViewProps) {
     const regularNodes = nodes.filter(n => !n.isVirtual);
     const virtualNodes = nodes.filter(n => n.isVirtual);
 
-    // Regular nodes (circles)
     const node = g.append('g')
       .selectAll('circle')
       .data(regularNodes)
@@ -127,8 +131,8 @@ export function GraphView({ isVisible }: GraphViewProps) {
     nodeSelectionRef.current = node;
 
     node.attr('r', 18)
-      .attr('fill', '#6B7280')
-      .attr('stroke', '#fff')
+      .attr('fill', nodeColor)
+      .attr('stroke', nodeStroke)
       .attr('stroke-width', 2)
       .style('cursor', 'pointer')
       .on('click', (_event, d) => {
@@ -151,14 +155,13 @@ export function GraphView({ isVisible }: GraphViewProps) {
         })
       );
 
-    // Virtual nodes (diamonds)
     const virtualNode = g.append('g')
       .selectAll('polygon')
       .data(virtualNodes)
       .join('polygon')
       .attr('points', '-12,0 0,-12 12,0 0,12')
       .attr('fill', '#F59E0B')
-      .attr('stroke', '#fff')
+      .attr('stroke', nodeStroke)
       .attr('stroke-width', 2)
       .style('cursor', 'pointer') as d3.Selection<SVGPolygonElement, GraphNode, SVGGElement, unknown>;
 
@@ -181,7 +184,6 @@ export function GraphView({ isVisible }: GraphViewProps) {
         })
       );
 
-    // KaTeX labels via foreignObject
     const labelGroup = g.append('g').attr('class', 'label-group');
 
     const labels = labelGroup.selectAll('foreignObject')
@@ -195,12 +197,11 @@ export function GraphView({ isVisible }: GraphViewProps) {
     labels.append('xhtml:div')
       .style('text-align', 'center')
       .style('font-size', '10px')
-      .style('color', '#374151')
+      .style('color', labelColor)
       .style('line-height', '1.2')
       .style('white-space', 'nowrap')
       .html((d) => renderKatex(d.label));
 
-    // Virtual node labels
     const virtualLabelGroup = g.append('g').attr('class', 'virtual-label-group');
 
     const virtualLabels = virtualLabelGroup.selectAll('text')
@@ -214,7 +215,6 @@ export function GraphView({ isVisible }: GraphViewProps) {
       .attr('pointer-events', 'none')
       .text((d) => d.label);
 
-    // Tick
     simulation.on('tick', () => {
       link
         .attr('x1', (d: any) => d.source.x)
@@ -243,22 +243,23 @@ export function GraphView({ isVisible }: GraphViewProps) {
     return undefined;
   }, [currentDataset, stringSet, dimensions]);
 
-  // Update node colors without recreating graph
   useEffect(() => {
     if (!nodeSelectionRef.current) return;
+    const accentColor = getCSSVariable('--accent');
+    const nodeColor = getCSSVariable('--graph-node');
     nodeSelectionRef.current
-      .attr('fill', (d) => (d.id === selectedStatementId ? '#3B82F6' : '#6B7280'));
+      .attr('fill', (d) => (d.id === selectedStatementId ? accentColor : nodeColor));
 
     if (!virtualNodeSelectionRef.current) return;
     virtualNodeSelectionRef.current
-      .attr('fill', (d) => (d.id === selectedStatementId ? '#3B82F6' : '#F59E0B'));
+      .attr('fill', (d) => (d.id === selectedStatementId ? accentColor : '#F59E0B'));
   }, [selectedStatementId]);
 
   return (
     <div
       ref={containerRef}
-      className="w-full h-full bg-gray-50 rounded-lg overflow-hidden"
-      style={{ display: isVisible ? 'block' : 'none' }}
+      className="w-full h-full overflow-hidden"
+      style={{ backgroundColor: 'var(--graph-bg)', display: isVisible ? 'block' : 'none' }}
     >
       <svg
         ref={svgRef}

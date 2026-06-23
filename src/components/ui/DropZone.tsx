@@ -58,7 +58,6 @@ export function DropZone({
         // user cancelled
       }
     } else {
-      // fallback: trigger hidden input
       document.getElementById(`file-input-${compact ? 'compact' : 'full'}`)?.click();
     }
   }, [onFile, compact]);
@@ -82,15 +81,17 @@ export function DropZone({
       onDragLeave={handleDragLeave}
       className={`border-2 border-dashed rounded-lg text-center transition-all duration-300 cursor-pointer ${
         compact ? 'p-4' : 'p-8'
-      } ${
-        isDragOver
-          ? 'border-blue-300 bg-blue-50/60 scale-[1.01]'
-          : 'border-gray-300 hover:border-blue-500'
       }`}
+      style={{
+        borderColor: isDragOver ? 'var(--accent)' : 'var(--border-secondary)',
+        backgroundColor: isDragOver ? 'var(--accent-muted)' : 'transparent',
+        transform: isDragOver ? 'scale(1.01)' : undefined,
+      }}
     >
       {!compact && (
         <svg
-          className={`mx-auto h-12 w-12 transition-colors duration-300 ${isDragOver ? 'text-blue-400' : 'text-gray-400'}`}
+          className="mx-auto h-12 w-12 transition-colors duration-300"
+          style={{ color: isDragOver ? 'var(--accent)' : 'var(--text-placeholder)' }}
           stroke="currentColor"
           fill="none"
           viewBox="0 0 48 48"
@@ -104,7 +105,6 @@ export function DropZone({
         </svg>
       )}
       <div className="block cursor-pointer" onClick={handleBrowse}>
-        {/* fallback for browsers without File Access API */}
         <input
           id={`file-input-${compact ? 'compact' : 'full'}`}
           type="file"
@@ -115,12 +115,18 @@ export function DropZone({
             if (file) onFile(file);
           }}
         />
-        <p className={`text-sm transition-colors duration-300 ${compact ? '' : 'mt-2'} ${isDragOver ? 'text-blue-600' : 'text-gray-600'}`}>
+        <p
+          className={`text-sm transition-colors duration-300 ${compact ? '' : 'mt-2'}`}
+          style={{ color: isDragOver ? 'var(--accent-text)' : 'var(--text-secondary)' }}
+        >
           {isDragOver ? releaseText : hint}{' '}
-          <span className="text-blue-600 hover:text-blue-500">{browseText}</span>
+          <span style={{ color: 'var(--accent)' }}>{browseText}</span>
         </p>
         {formatHint && (
-          <p className={`mt-1 text-xs transition-colors duration-300 ${isDragOver ? 'text-blue-400/80' : 'text-gray-500'}`}>
+          <p
+            className={`mt-1 text-xs transition-colors duration-300`}
+            style={{ color: isDragOver ? 'var(--accent)' : 'var(--text-muted)' }}
+          >
             {formatHint}
           </p>
         )}
@@ -133,7 +139,8 @@ export function DropZone({
             e.stopPropagation();
             onOpenRecent();
           }}
-          className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+          className="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors cursor-pointer hover:bg-[var(--accent-muted)]"
+          style={{ color: 'var(--accent)' }}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />

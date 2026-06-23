@@ -22,7 +22,7 @@ function TreeComponent({ node, connection, level = 0, highlightId }: { node: Tre
         <CompoundConditionCard vn={vn} highlightId={node.parentId} />
 
         {node.connections.length > 0 && (
-          <div className="border-l-2 border-gray-200 ml-4">
+          <div className="ml-4" style={{ borderLeft: '2px solid var(--border-primary)' }}>
             {node.connections.map(({ node: child, connection: conn }) => (
               <div key={child.id} className="ml-2">
                 <div className="py-1">
@@ -41,18 +41,20 @@ function TreeComponent({ node, connection, level = 0, highlightId }: { node: Tre
     <div className={`${level > 0 ? 'ml-6' : ''}`}>
       <div
         onClick={() => selectStatement(node.id)}
-        className={`flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer hover:bg-gray-100 ${
-          isSelected ? 'bg-blue-100 border border-blue-300' : ''
-        }`}
+        className="flex items-center gap-2 py-2 px-3 rounded-lg cursor-pointer transition-colors"
+        style={{
+          backgroundColor: isSelected ? 'var(--accent-muted)' : undefined,
+          border: isSelected ? '1px solid var(--accent-border)' : '1px solid transparent',
+        }}
       >
-        <span className="text-gray-400">{'●'}</span>
-        <span className="text-sm text-gray-900">
+        <span style={{ color: 'var(--text-placeholder)' }}>{'●'}</span>
+        <span className="text-sm" style={{ color: 'var(--text-primary)' }}>
           <MathText text={stringSet?.[node.id] || node.id} />
         </span>
       </div>
 
       {node.connections.length > 0 && (
-        <div className="border-l-2 border-gray-200 ml-4">
+        <div className="ml-4" style={{ borderLeft: '2px solid var(--border-primary)' }}>
           {node.connections.map(({ node: child, connection: conn }) => {
             const direction = conn.from === node.id ? 'forward' : 'backward';
             return (
@@ -82,7 +84,6 @@ export function TreeView() {
 
   const t = useStore((s) => s.getLocaleMessages());
 
-  // Scroll to top when selected statement changes
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = 0;
@@ -91,7 +92,7 @@ export function TreeView() {
 
   if (!currentDataset) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>
         {t.noDataset}
       </div>
     );
@@ -99,7 +100,7 @@ export function TreeView() {
 
   if (!selectedStatementId) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>
         {t.selectStatement}
       </div>
     );
@@ -107,7 +108,7 @@ export function TreeView() {
 
   if (!tree) {
     return (
-      <div className="flex items-center justify-center h-full text-gray-500">
+      <div className="flex items-center justify-center h-full" style={{ color: 'var(--text-muted)' }}>
         {t.noConnections}
       </div>
     );
@@ -115,7 +116,7 @@ export function TreeView() {
 
   return (
     <div ref={scrollRef} className="p-4 overflow-auto h-full">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>
         {t.derivationTree}
       </h3>
       <div style={{ minWidth: `${320 + maxDepth * 48}px` }}>

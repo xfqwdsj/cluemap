@@ -21,14 +21,14 @@ export function RelationshipLegend() {
   };
 
   return (
-    <div className="flex flex-wrap gap-4 p-4 bg-gray-50 rounded-lg">
+    <div className="flex flex-wrap gap-4 p-4 rounded-lg" style={{ backgroundColor: 'var(--bg-tertiary)' }}>
       {Object.entries(RELATIONSHIP_COLORS).map(([type, color]) => (
         <div key={type} className="flex items-center gap-2">
           <div
             className="w-4 h-4 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <span className="text-sm text-gray-700">
+          <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>
             {RELATIONSHIP_SYMBOLS[type]} {RELATIONSHIP_LABELS[type] || type}
           </span>
         </div>

@@ -75,6 +75,10 @@ export interface LocaleMessages {
   // Sidebar
   toggleSidebar: string;
   closeSidebar: string;
+  // Dark mode
+  darkMode: string;
+  lightMode: string;
+  followSystem: string;
   // Recent files
   recentFiles: string;
   noRecentFiles: string;
@@ -134,6 +138,9 @@ const zh: LocaleMessages = {
   warningCount: '警告',
   validationPassed: '校验通过',
   noIssuesFound: '未发现任何问题。',
+  darkMode: '深色模式',
+  lightMode: '浅色模式',
+  followSystem: '跟随系统',
   copyReport: '复制校验报告',
   locate: '定位',
   datasetSummary: '数据集摘要',

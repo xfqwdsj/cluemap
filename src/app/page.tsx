@@ -26,28 +26,27 @@ export default function Home() {
   ];
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
       <Header />
 
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />
 
-        {/* Backdrop for mobile sidebar */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+            className="fixed inset-0 z-30 lg:hidden"
+            style={{ backgroundColor: 'var(--bg-overlay)' }}
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
         <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-          <div className="p-4 border-b border-gray-200 bg-white flex items-center justify-between gap-2 flex-wrap">
+          <div className="p-4 flex items-center justify-between gap-2 flex-wrap" style={{ borderBottom: '1px solid var(--border-primary)', backgroundColor: 'var(--bg-secondary)' }}>
             <Tabs tabs={tabs} activeTab={activeTab} onChange={(id) => setActiveTab(id as 'graph' | 'tree' | 'detail')} />
             <UploadPanel />
           </div>
 
           <div className="flex-1 overflow-hidden relative">
-            {/* GraphView always mounted, visibility controlled by prop */}
             <GraphView isVisible={activeTab === 'graph'} />
             {activeTab === 'tree' && <TreeView />}
             {activeTab === 'detail' && <DetailView />}

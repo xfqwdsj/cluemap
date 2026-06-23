@@ -16,10 +16,9 @@ export function CompoundConditionCard({ vn, highlightId }: CompoundConditionCard
 
   const targetText = stringSet?.[vn.target] || vn.target;
 
-  const highlightClass = 'text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-bold';
-  const normalClass = 'cursor-pointer hover:text-blue-600 hover:underline';
+  const highlightClass = 'px-1.5 py-0.5 rounded font-bold';
+  const normalClass = 'cursor-pointer hover:underline';
 
-  // Sort premises: highlighted one first
   const sortedPremises = [...vn.premises];
   const highlightIndex = sortedPremises.indexOf(highlightId || '');
   if (highlightIndex > 0) {
@@ -28,12 +27,18 @@ export function CompoundConditionCard({ vn, highlightId }: CompoundConditionCard
   }
 
   return (
-    <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 my-2">
+    <div
+      className="border rounded-lg p-3 my-2"
+      style={{
+        backgroundColor: 'var(--warning-bg)',
+        borderColor: 'var(--warning-border)',
+      }}
+    >
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-amber-600 font-mono text-lg font-bold">
+        <span className="font-mono text-lg font-bold" style={{ color: 'var(--warning-text)' }}>
           {vn.type === 'and' ? '∧' : '∨'}
         </span>
-        <span className="text-sm font-medium text-amber-800">
+        <span className="text-sm font-medium" style={{ color: 'var(--warning-text)' }}>
           {vn.type === 'and' ? t.andCondition : t.orCondition}
         </span>
       </div>
@@ -42,24 +47,32 @@ export function CompoundConditionCard({ vn, highlightId }: CompoundConditionCard
         {sortedPremises.map((p, i) => (
           <span key={p}>
             {i > 0 && (
-              <span className="text-amber-600 font-mono mx-1">
+              <span className="font-mono mx-1" style={{ color: 'var(--warning-text)' }}>
                 {vn.type === 'and' ? '∧' : '∨'}
               </span>
             )}
             <span
               onClick={() => selectStatement(p)}
               className={highlightId === p ? highlightClass : normalClass}
+              style={{
+                color: highlightId === p ? 'var(--accent-text)' : 'var(--text-secondary)',
+                backgroundColor: highlightId === p ? 'var(--accent-muted)' : undefined,
+              }}
             >
               <MathText text={stringSet?.[p] || p} />
             </span>
           </span>
         ))}
 
-        <span className="text-gray-400 mx-2">→</span>
+        <span className="mx-2" style={{ color: 'var(--text-placeholder)' }}>→</span>
 
         <span
           onClick={() => selectStatement(vn.target)}
           className={highlightId === vn.target ? highlightClass : normalClass}
+          style={{
+            color: highlightId === vn.target ? 'var(--accent-text)' : 'var(--text-secondary)',
+            backgroundColor: highlightId === vn.target ? 'var(--accent-muted)' : undefined,
+          }}
         >
           <MathText text={targetText} />
         </span>

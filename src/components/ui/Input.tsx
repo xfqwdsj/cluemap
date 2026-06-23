@@ -10,19 +10,25 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text-secondary)' }}>
             {label}
           </label>
         )}
         <input
           ref={ref}
-          className={`w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-            error ? 'border-red-500' : ''
+          className={`w-full h-10 px-3 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 ${
+            error ? '' : ''
           } ${className}`}
+          style={{
+            border: `1px solid ${error ? 'var(--error-border)' : 'var(--border-secondary)'}`,
+            backgroundColor: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
+            '--tw-ring-color': 'var(--accent-ring)',
+          } as React.CSSProperties}
           {...props}
         />
         {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
+          <p className="mt-1 text-sm" style={{ color: 'var(--error-text)' }}>{error}</p>
         )}
       </div>
     );

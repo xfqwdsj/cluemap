@@ -1,17 +1,185 @@
 @import "tailwindcss";
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root,
+[data-theme="light"] {
+  --bg-primary: var(--color-gray-50);
+  --bg-secondary: #ffffff;
+  --bg-tertiary: var(--color-gray-100);
+  --bg-hover: var(--color-gray-100);
+  --bg-active: #eff6ff;
+  --bg-card: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.5);
+
+  --text-primary: var(--color-gray-900);
+  --text-secondary: var(--color-gray-700);
+  --text-muted: var(--color-gray-500);
+  --text-placeholder: var(--color-gray-400);
+
+  --border-primary: var(--color-gray-200);
+  --border-secondary: var(--color-gray-300);
+  --border-focus: var(--color-blue-500);
+
+  --accent: var(--color-blue-600);
+  --accent-hover: var(--color-blue-700);
+  --accent-muted: #eff6ff;
+  --accent-text: var(--color-blue-700);
+  --accent-border: var(--color-blue-300);
+  --accent-ring: var(--color-blue-500);
+
+  --success-bg: #f0fdf4;
+  --success-text: var(--color-green-700);
+  --success-border: var(--color-green-200);
+
+  --warning-bg: #fffbeb;
+  --warning-text: var(--color-amber-700);
+  --warning-border: var(--color-amber-200);
+
+  --error-bg: #fef2f2;
+  --error-text: var(--color-red-700);
+  --error-border: var(--color-red-200);
+
+  --scrollbar-thumb: var(--color-gray-300);
+  --scrollbar-track: transparent;
+  --scrollbar-thumb-hover: var(--color-gray-400);
+
+  --graph-bg: var(--color-gray-50);
+  --graph-label: var(--color-gray-700);
+  --graph-node: var(--color-gray-500);
+  --graph-node-stroke: #ffffff;
+  --graph-arrow: var(--color-blue-600);
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #030712;
+  --bg-secondary: #111827;
+  --bg-tertiary: rgba(31, 41, 55, 0.5);
+  --bg-hover: #1f2937;
+  --bg-active: rgba(59, 130, 246, 0.15);
+  --bg-card: #111827;
+  --bg-overlay: rgba(0, 0, 0, 0.7);
+
+  --text-primary: var(--color-gray-100);
+  --text-secondary: var(--color-gray-300);
+  --text-muted: var(--color-gray-400);
+  --text-placeholder: var(--color-gray-500);
+
+  --border-primary: #374151;
+  --border-secondary: #4b5563;
+  --border-focus: var(--color-blue-400);
+
+  --accent: var(--color-blue-500);
+  --accent-hover: var(--color-blue-400);
+  --accent-muted: rgba(59, 130, 246, 0.15);
+  --accent-text: var(--color-blue-400);
+  --accent-border: #1e3a5f;
+  --accent-ring: var(--color-blue-400);
+
+  --success-bg: rgba(34, 197, 94, 0.15);
+  --success-text: var(--color-green-400);
+  --success-border: rgba(34, 197, 94, 0.3);
+
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --warning-text: var(--color-amber-400);
+  --warning-border: rgba(245, 158, 11, 0.3);
+
+  --error-bg: rgba(239, 68, 68, 0.15);
+  --error-text: var(--color-red-400);
+  --error-border: rgba(239, 68, 68, 0.3);
+
+  --scrollbar-thumb: #4b5563;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb-hover: #6b7280;
+
+  --graph-bg: #111827;
+  --graph-label: var(--color-gray-300);
+  --graph-node: var(--color-gray-400);
+  --graph-node-stroke: #1f2937;
+  --graph-arrow: var(--color-blue-400);
+
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-primary: #030712;
+    --bg-secondary: #111827;
+    --bg-tertiary: rgba(31, 41, 55, 0.5);
+    --bg-hover: #1f2937;
+    --bg-active: rgba(59, 130, 246, 0.15);
+    --bg-card: #111827;
+    --bg-overlay: rgba(0, 0, 0, 0.7);
+
+    --text-primary: var(--color-gray-100);
+    --text-secondary: var(--color-gray-300);
+    --text-muted: var(--color-gray-400);
+    --text-placeholder: var(--color-gray-500);
+
+    --border-primary: #374151;
+    --border-secondary: #4b5563;
+    --border-focus: var(--color-blue-400);
+
+    --accent: var(--color-blue-500);
+    --accent-hover: var(--color-blue-400);
+    --accent-muted: rgba(59, 130, 246, 0.15);
+    --accent-text: var(--color-blue-400);
+    --accent-border: #1e3a5f;
+    --accent-ring: var(--color-blue-400);
+
+    --success-bg: rgba(34, 197, 94, 0.15);
+    --success-text: var(--color-green-400);
+    --success-border: rgba(34, 197, 94, 0.3);
+
+    --warning-bg: rgba(245, 158, 11, 0.15);
+    --warning-text: var(--color-amber-400);
+    --warning-border: rgba(245, 158, 11, 0.3);
+
+    --error-bg: rgba(239, 68, 68, 0.15);
+    --error-text: var(--color-red-400);
+    --error-border: rgba(239, 68, 68, 0.3);
+
+    --scrollbar-thumb: #4b5563;
+    --scrollbar-track: transparent;
+    --scrollbar-thumb-hover: #6b7280;
+
+    --graph-bg: #111827;
+    --graph-label: var(--color-gray-300);
+    --graph-node: var(--color-gray-400);
+    --graph-node-stroke: #1f2937;
+    --graph-arrow: var(--color-blue-400);
+
+    color-scheme: dark;
+  }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 4px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
