@@ -38,6 +38,12 @@ pnpm debug-tree datasets/linear-algebra.json sim-pap sim-charpoly inv
 
 ## 重要约定
 
+### 指令来源
+
+- 本文件（`AGENTS.md`）是 AI 助手的系统级指令，定义项目规则和约束
+- `.agents/skills/` 下有项目专属技能文档，定义具体操作流程
+- **修改代码或规则时，如果影响了本文件的描述，同步更新本文件；如果影响了技能文档中的描述，必须同步更新对应的技能**
+
 ### 包管理
 
 - **必须使用 pnpm**，不要用 npm
@@ -50,6 +56,69 @@ pnpm debug-tree datasets/linear-algebra.json sim-pap sim-charpoly inv
 - 使用 Tailwind CSS 样式
 - 组件使用 `'use client'` 指令（需要客户端交互时）
 - 状态管理使用 Zustand
+
+### 主题系统
+
+项目使用 CSS 自定义属性 + next-themes 实现三态主题（system/light/dark）。
+
+#### 颜色变量
+
+所有颜色定义在 `src/app/globals.css` 的 CSS 变量中：
+
+```css
+:root, [data-theme="light"] { --bg-primary: ...; --text-primary: ...; }
+[data-theme="dark"] { --bg-primary: ...; --text-primary: ...; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+```
+
+主要变量分类：
+
+- `--bg-*`: 背景色（primary, secondary, tertiary, hover, active, card, overlay）
+- `--text-*`: 文字色（primary, secondary, muted, placeholder）
+- `--border-*`: 边框色（primary, secondary, focus）
+- `--accent-*`: 强调色（accent, hover, muted, text, border, ring）
+- `--success-*`, `--warning-*`, `--error-*`: 状态色
+- `--scrollbar-*`: 滚动条色
+- `--graph-*`: D3 图表色（bg, label, node, node-stroke, arrow）
+
+#### 禁止硬编码颜色
+
+**禁止在组件中使用 Tailwind 颜色类（如 `bg-gray-50`、`text-blue-600`、`dark:bg-gray-900`）或硬编码十六进制颜色。所有颜色必须通过 CSS 变量引用。**
+
+```typescript
+// ✅ 正确 — 使用 CSS 变量
+style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+
+// ❌ 错误 — 硬编码 Tailwind 颜色类
+className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100"
+
+// ❌ 错误 — 硬编码十六进制颜色
+style={{ color: '#3B82F6' }}
+```
+
+例外：
+
+- D3.js 图表中的关系颜色（`RELATIONSHIP_COLORS` in `graph-utils.ts`）可保留固定值，因为它们是语义色（蓝=implies, 红=inverse 等），不随主题变化
+- `RelationshipBadge` 中的关系颜色使用 `color-mix()` 基于 CSS 变量动态生成
+- 数据集中定义的颜色不受此约束
+
+#### 添加新颜色
+
+1. 在 `globals.css` 的 `:root` 和 `[data-theme="dark"]` 中添加变量
+2. 在 `@media (prefers-color-scheme: dark)` 的 `:root:not([data-theme="light"])` 中添加对应值
+3. 在组件中通过 `style={{ color: 'var(--xxx)' }}` 引用
+
+#### 主题切换组件
+
+- `ThemeToggle`（`src/components/ThemeToggle.tsx`）：顶栏图标按钮，循环 system→light→dark
+- `IconButton`（`src/components/ui/IconButton.tsx`）：统一的图标按钮组件，支持 `size="sm"|"md"`
+- 侧边栏折叠区域也有主题切换按钮（全宽图标+文字）
+
+#### 注意事项
+
+- GraphView 中 D3 颜色需通过 `getComputedStyle(document.documentElement).getPropertyValue('--xxx')` 读取
+- SSR 时不能调用 `getCSSVariable()`，会导致 hydration mismatch —— 使用 CSS 变量字符串（如 `var(--graph-bg)`）而非解析后的值
+- 滚动条样式已在 `globals.css` 中通过 `::-webkit-scrollbar` 和 `scrollbar-width` 全局设置
 
 ### 数据集格式
 
