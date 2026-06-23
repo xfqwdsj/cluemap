@@ -4,8 +4,9 @@ import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import katex from 'katex';
 import { useStore } from '@/lib/store';
-import { prepareGraphData, createSimulation, RELATIONSHIP_COLORS } from '@/lib/graph-utils';
-import { GraphNode, GraphLink } from '@/lib/graph-utils';
+import { prepareGraphData, createSimulation, RELATIONSHIP_COLORS, DEFAULT_FORCE_PARAMS } from '@/lib/graph-utils';
+import { GraphNode, GraphLink, ForceParams } from '@/lib/graph-utils';
+import { ForceControlPanel } from './ForceControlPanel';
 
 const LABEL_WIDTH = 120;
 const LABEL_HEIGHT = 36;
@@ -39,6 +40,10 @@ export function GraphView({ isVisible }: GraphViewProps) {
   const virtualNodeSelectionRef = useRef<d3.Selection<SVGPolygonElement, GraphNode, SVGGElement, unknown> | null>(null);
   const builtRef = useRef(false);
   const selectStatementRef = useRef<((id: string | null) => void) | null>(null);
+  const forceParamsRef = useRef<ForceParams>({ ...DEFAULT_FORCE_PARAMS });
+  const dragAlphaTargetRef = useRef(DEFAULT_FORCE_PARAMS.dragAlphaTarget);
+  const nodeRadiusRef = useRef(DEFAULT_FORCE_PARAMS.nodeRadius);
+  const prevEggModeRef = useRef(false);
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
   const currentDataset = useStore((s) => s.getCurrentDataset());
@@ -46,6 +51,12 @@ export function GraphView({ isVisible }: GraphViewProps) {
   const selectStatement = useStore((s) => s.selectStatement);
   const stringSet = useStore((s) => s.getCurrentStringSet());
   const datasetVersion = useStore((s) => s.datasetVersion);
+  const eggMode = useStore((s) => s.eggMode);
+  const eggParams = useStore((s) => s.eggParams);
+  const eggVersion = useStore((s) => s.eggVersion);
+  const setEggParam = useStore((s) => s.setEggParam);
+  const resetEggParams = useStore((s) => s.resetEggParams);
+  const setEggMode = useStore((s) => s.setEggMode);
 
   selectStatementRef.current = selectStatement;
 
@@ -74,6 +85,34 @@ export function GraphView({ isVisible }: GraphViewProps) {
   }, [datasetVersion]);
 
   useEffect(() => {
+    const sim = simulationRef.current;
+    if (!sim) { prevEggModeRef.current = eggMode; return; }
+
+    if (!eggMode && prevEggModeRef.current) {
+      const d = DEFAULT_FORCE_PARAMS;
+      sim.force<d3.ForceLink<GraphNode, GraphLink>>('link')?.distance(d.linkDistance);
+      sim.force<d3.ForceManyBody<GraphNode>>('charge')?.strength(d.chargeStrength);
+      sim.force<d3.ForceCollide<GraphNode>>('collision')?.radius(d.collisionRadius);
+      sim.alphaDecay(d.alphaDecay);
+      sim.alpha(0.3).restart();
+      nodeSelectionRef.current?.attr('r', d.nodeRadius);
+      dragAlphaTargetRef.current = d.dragAlphaTarget;
+      nodeRadiusRef.current = d.nodeRadius;
+    } else if (eggMode) {
+      const p = eggParams;
+      sim.force<d3.ForceLink<GraphNode, GraphLink>>('link')?.distance(p.linkDistance);
+      sim.force<d3.ForceManyBody<GraphNode>>('charge')?.strength(p.chargeStrength);
+      sim.force<d3.ForceCollide<GraphNode>>('collision')?.radius(p.collisionRadius);
+      sim.alphaDecay(p.alphaDecay);
+      sim.alpha(0.3).restart();
+      nodeSelectionRef.current?.attr('r', p.nodeRadius);
+      dragAlphaTargetRef.current = p.dragAlphaTarget;
+      nodeRadiusRef.current = p.nodeRadius;
+    }
+    prevEggModeRef.current = eggMode;
+  }, [eggMode, eggVersion]);
+
+  useEffect(() => {
     if (!currentDataset || !svgRef.current || builtRef.current) return;
     if (dimensions.width <= 0 || dimensions.height <= 0) return;
 
@@ -82,24 +121,34 @@ export function GraphView({ isVisible }: GraphViewProps) {
 
     const nodeColor = getCSSVariable('--graph-node');
     const nodeStroke = getCSSVariable('--graph-node-stroke');
-    const arrowColor = getCSSVariable('--graph-arrow');
     const labelColor = getCSSVariable('--graph-label');
 
     const { nodes, links } = prepareGraphData(currentDataset, stringSet);
-    const simulation = createSimulation(nodes, links, dimensions.width, dimensions.height);
+    const params = forceParamsRef.current;
+    const simulation = createSimulation(nodes, links, dimensions.width, dimensions.height, params);
     simulationRef.current = simulation;
 
-    svg.append('defs').append('marker')
-      .attr('id', 'arrowhead')
-      .attr('viewBox', '0 0 10 6')
-      .attr('refX', 32)
-      .attr('refY', 3)
-      .attr('markerWidth', 8)
-      .attr('markerHeight', 6)
-      .attr('orient', 'auto')
-      .append('path')
-      .attr('d', 'M0,0 L10,3 L0,6 Z')
-      .attr('fill', arrowColor);
+    const nodeById = new Map(nodes.map(n => [n.id, n]));
+
+    const defs = svg.append('defs');
+    const markerSize = 8;
+    const markerViewHeight = 5;
+    const markerPath = 'M0,0 L10,2.5 L0,5 Z';
+
+    for (const [type, color] of Object.entries(RELATIONSHIP_COLORS)) {
+      defs.append('marker')
+        .attr('id', `arrow-${type}`)
+        .attr('viewBox', `0 0 10 ${markerViewHeight}`)
+        .attr('refX', 10)
+        .attr('refY', 2.5)
+        .attr('markerWidth', markerSize)
+        .attr('markerHeight', markerSize * markerViewHeight / 10)
+        .attr('orient', 'auto')
+        .append('path')
+        .attr('d', markerPath)
+        .attr('fill', color)
+        .attr('fill-opacity', 0.6);
+    }
 
     const g = svg.append('g');
 
@@ -117,8 +166,7 @@ export function GraphView({ isVisible }: GraphViewProps) {
       .attr('stroke', (d) => RELATIONSHIP_COLORS[d.type] || '#999')
       .attr('stroke-width', 2)
       .attr('stroke-opacity', 0.6)
-      .attr('stroke-dasharray', (d) => d.isDashed ? '5,5' : null)
-      .attr('marker-end', (d) => d.type === 'implies' ? 'url(#arrowhead)' : null);
+      .attr('stroke-dasharray', (d) => d.isDashed ? '5,5' : null);
 
     const regularNodes = nodes.filter(n => !n.isVirtual);
     const virtualNodes = nodes.filter(n => n.isVirtual);
@@ -130,7 +178,7 @@ export function GraphView({ isVisible }: GraphViewProps) {
 
     nodeSelectionRef.current = node;
 
-    node.attr('r', 18)
+    node.attr('r', params.nodeRadius)
       .attr('fill', nodeColor)
       .attr('stroke', nodeStroke)
       .attr('stroke-width', 2)
@@ -140,7 +188,7 @@ export function GraphView({ isVisible }: GraphViewProps) {
       })
       .call(d3.drag<SVGCircleElement, GraphNode>()
         .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
+          if (!event.active) simulation.alphaTarget(dragAlphaTargetRef.current).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
@@ -169,7 +217,7 @@ export function GraphView({ isVisible }: GraphViewProps) {
 
     virtualNode.call(d3.drag<SVGPolygonElement, GraphNode>()
         .on('start', (event, d) => {
-          if (!event.active) simulation.alphaTarget(0.3).restart();
+          if (!event.active) simulation.alphaTarget(dragAlphaTargetRef.current).restart();
           d.fx = d.x;
           d.fy = d.y;
         })
@@ -219,8 +267,25 @@ export function GraphView({ isVisible }: GraphViewProps) {
       link
         .attr('x1', (d: any) => d.source.x)
         .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y);
+        .attr('x2', (d: any) => {
+          const t = nodeById.get(d.target.id);
+          if (!t || d.type !== 'implies') return d.target.x;
+          const r = t.isVirtual ? 12 : nodeRadiusRef.current;
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          return d.target.x - (dx / dist) * r;
+        })
+        .attr('y2', (d: any) => {
+          const t = nodeById.get(d.target.id);
+          if (!t || d.type !== 'implies') return d.target.y;
+          const r = t.isVirtual ? 12 : nodeRadiusRef.current;
+          const dx = d.target.x - d.source.x;
+          const dy = d.target.y - d.source.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          return d.target.y - (dy / dist) * r;
+        })
+        .attr('marker-end', (d: any) => d.type === 'implies' ? `url(#arrow-${d.type})` : null);
 
       node
         .attr('cx', (d) => d.x || 0)
@@ -267,6 +332,14 @@ export function GraphView({ isVisible }: GraphViewProps) {
         height={dimensions.height}
         className="w-full h-full"
       />
+      {eggMode && (
+        <ForceControlPanel
+          params={eggParams}
+          onChange={setEggParam}
+          onReset={resetEggParams}
+          onClose={() => setEggMode(false)}
+        />
+      )}
     </div>
   );
 }

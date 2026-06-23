@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useStore } from '@/lib/store';
 import { StringSetSwitcher } from './StringSetSwitcher';
 import { getAvailableLocales, setLocale as setI18nLocale, LocaleMessages } from '@/lib/i18n';
@@ -21,6 +21,9 @@ export function Header() {
   const setShowLocaleUpload = useStore((s) => s.setLocaleUploadOpen);
   const [showRecent, setShowRecent] = useState(false);
   const [recentEntries, setRecentEntries] = useState<FileHistoryEntry[]>([]);
+  const eggMode = useStore((s) => s.eggMode);
+  const setEggMode = useStore((s) => s.setEggMode);
+  const clickTimesRef = useRef<number[]>([]);
 
   const refreshRecent = useCallback(() => {
     getRecentFiles('locales').then(setRecentEntries);
@@ -82,6 +85,17 @@ export function Header() {
   const sidebarOpen = useStore((s) => s.sidebarOpen);
   const toggleSidebar = useStore((s) => s.toggleSidebar);
 
+  const handleTitleClick = useCallback(() => {
+    const now = Date.now();
+    const times = clickTimesRef.current.filter(t => now - t < 500);
+    times.push(now);
+    clickTimesRef.current = times;
+    if (times.length >= 3) {
+      clickTimesRef.current = [];
+      setEggMode(!eggMode);
+    }
+  }, [eggMode, setEggMode]);
+
   return (
     <header style={{ backgroundColor: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-primary)' }} className="px-4 lg:px-6 py-4">
       <div className="flex items-center justify-between">
@@ -97,7 +111,14 @@ export function Header() {
               </svg>
             )}
           </IconButton>
-          <h1 className="text-xl lg:text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{t.appName}</h1>
+          <h1
+            className="text-xl lg:text-2xl font-bold select-none"
+            style={{ color: 'var(--text-primary)', cursor: 'default' }}
+            onClick={handleTitleClick}
+          >
+            {t.appName}
+            {eggMode && <span className="text-xs ml-1" style={{ color: 'var(--text-muted)' }}>🥚</span>}
+          </h1>
           {currentDataset && (
             <span className="text-sm hidden sm:inline truncate max-w-40" style={{ color: 'var(--text-muted)' }}>
               {currentDataset.name}

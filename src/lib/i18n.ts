@@ -95,6 +95,15 @@ export interface LocaleMessages {
   urlErrorNetwork: string;
   urlErrorFetch: string;
   orText: string;
+  // Force control panel
+  forceParams: string;
+  reset: string;
+  linkDistance: string;
+  chargeStrength: string;
+  collisionRadius: string;
+  dragAlphaTarget: string;
+  nodeRadius: string;
+  alphaDecay: string;
 }
 
 const zh: LocaleMessages = {
@@ -176,6 +185,14 @@ const zh: LocaleMessages = {
   urlErrorNetwork: '网络错误，请检查连接',
   urlErrorFetch: '加载失败',
   orText: '或',
+  forceParams: '力参数',
+  reset: '重置',
+  linkDistance: '连线距离',
+  chargeStrength: '斥力强度',
+  collisionRadius: '碰撞半径',
+  dragAlphaTarget: '拖拽灵敏度',
+  nodeRadius: '节点半径',
+  alphaDecay: '衰减速度',
 };
 
 const locales: Record<string, LocaleMessages> = {

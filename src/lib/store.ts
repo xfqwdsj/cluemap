@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DataSet } from '@/types';
 import { Locale, LocaleMessages, getLocale } from './i18n';
+import { ForceParams, DEFAULT_FORCE_PARAMS } from './graph-utils';
 
 interface AppStore {
   datasets: DataSet[];
@@ -15,6 +16,9 @@ interface AppStore {
   sidebarOpen: boolean;
   collapsedActionIds: string[];
   localeUploadOpen: boolean;
+  eggMode: boolean;
+  eggParams: ForceParams;
+  eggVersion: number;
 
   addDataset: (dataset: DataSet) => void;
   addStringSetToCurrentDataset: (stringSet: DataSet['stringSets'][0]) => void;
@@ -29,6 +33,9 @@ interface AppStore {
   toggleSidebar: () => void;
   setCollapsedActionIds: (ids: string[]) => void;
   setLocaleUploadOpen: (open: boolean) => void;
+  setEggMode: (on: boolean) => void;
+  setEggParam: (key: keyof ForceParams, value: number) => void;
+  resetEggParams: () => void;
   getCurrentDataset: () => DataSet | null;
   getCurrentStringSet: () => Record<string, string> | null;
   getLocaleMessages: () => LocaleMessages;
@@ -47,6 +54,9 @@ export const useStore = create<AppStore>((set, get) => ({
   sidebarOpen: false,
   collapsedActionIds: [],
   localeUploadOpen: false,
+  eggMode: false,
+  eggParams: { ...DEFAULT_FORCE_PARAMS },
+  eggVersion: 0,
 
   addDataset: (dataset) => set((state) => {
     const existingIndex = state.datasets.findIndex(d => d.id === dataset.id);
@@ -99,6 +109,15 @@ export const useStore = create<AppStore>((set, get) => ({
   toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
   setCollapsedActionIds: (ids) => set({ collapsedActionIds: ids }),
   setLocaleUploadOpen: (open) => set({ localeUploadOpen: open }),
+  setEggMode: (on) => set({ eggMode: on }),
+  setEggParam: (key, value) => set((state) => ({
+    eggParams: { ...state.eggParams, [key]: value },
+    eggVersion: state.eggVersion + 1,
+  })),
+  resetEggParams: () => set((state) => ({
+    eggParams: { ...DEFAULT_FORCE_PARAMS },
+    eggVersion: state.eggVersion + 1,
+  })),
 
   getCurrentDataset: () => {
     const state = get();

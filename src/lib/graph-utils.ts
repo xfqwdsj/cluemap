@@ -63,17 +63,37 @@ export function prepareGraphData(
   return { nodes, links };
 }
 
+export interface ForceParams {
+  linkDistance: number;
+  chargeStrength: number;
+  collisionRadius: number;
+  dragAlphaTarget: number;
+  nodeRadius: number;
+  alphaDecay: number;
+}
+
+export const DEFAULT_FORCE_PARAMS: ForceParams = {
+  linkDistance: 180,
+  chargeStrength: -600,
+  collisionRadius: 80,
+  dragAlphaTarget: 0.3,
+  nodeRadius: 18,
+  alphaDecay: 0.0228,
+};
+
 export function createSimulation(
   nodes: GraphNode[],
   links: GraphLink[],
   width: number,
-  height: number
+  height: number,
+  params: ForceParams = DEFAULT_FORCE_PARAMS
 ) {
   return d3.forceSimulation<GraphNode>(nodes)
-    .force('link', d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(180))
-    .force('charge', d3.forceManyBody().strength(-600))
+    .force('link', d3.forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(params.linkDistance))
+    .force('charge', d3.forceManyBody().strength(params.chargeStrength))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide().radius(80));
+    .force('collision', d3.forceCollide().radius(params.collisionRadius))
+    .alphaDecay(params.alphaDecay);
 }
 
 export const RELATIONSHIP_COLORS: Record<string, string> = {
