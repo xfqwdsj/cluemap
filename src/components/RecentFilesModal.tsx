@@ -42,19 +42,23 @@ export function RecentFilesModal({ isOpen, onClose, type, entries, onSelect, onR
       {entries.length === 0 ? (
         <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>{t.noRecentFiles}</p>
       ) : (
-        <ul className="divide-y" style={{ borderColor: 'var(--border-primary)' }}>
+        <ul className="flex flex-col gap-1.5">
           {entries.map((entry) => (
-            <li key={entry.id} className="flex items-center justify-between py-3 px-2 rounded-lg transition-colors">
-              <button
-                onClick={() => onSelect(entry)}
-                className="flex-1 text-left min-w-0"
-              >
+            <li
+              key={entry.id}
+              onClick={() => onSelect(entry)}
+              className="flex items-center justify-between py-2.5 px-3 rounded-lg transition-colors cursor-pointer"
+              style={{ backgroundColor: 'transparent' }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}
+            >
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate" style={{ color: 'var(--text-primary)' }}>{entry.name}</p>
                 <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{formatTime(entry.lastOpened)}</p>
-              </button>
+              </div>
               <IconButton
                 size="sm"
-                onClick={() => handleDelete(entry.id)}
+                onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
                 title={t.deleteEntry}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
